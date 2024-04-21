@@ -7,19 +7,33 @@ using UnityEngine.Events;
 public class AISensor : MonoBehaviour
 {
     public UnityEvent<GameObject> FoundNewObject = new UnityEvent<GameObject>();
+    public UnityEvent<GameObject> LostObject = new UnityEvent<GameObject>();
     [SerializeField][HideInInspector] bool m_shouldDrawGizmos = true;
     [SerializeField][HideInInspector] float m_sightDistance = 20;
     [SerializeField][HideInInspector] float m_horizontalSightAngle = 20;
     [SerializeField][HideInInspector] float m_verticalSightAngle = 20;
+    [SerializeField]List<GameObject> m_objectsInSight = new List<GameObject>();
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!m_objectsInSight.Contains(other.gameObject))
+        {
+            FoundNewObject.Invoke(other.gameObject);
+            m_objectsInSight.Add(other.gameObject);
+        }
+    }
+    private void OnTriggerExit(Collider other)
+    {
+        if (m_objectsInSight.Contains(other.gameObject))
+        {
+            LostObject.Invoke(other.gameObject);
+            m_objectsInSight.Remove(other.gameObject);
+        }
+    }
     Mesh m_fovMesh;
     MeshFilter m_filter;
     MeshCollider m_collider;
     Rigidbody m_rigidBody;
-
-    private void Awake()
-    {
-        CheckComponents();
-    }
     public void CheckComponents()
     {
         if(m_rigidBody == null)
@@ -47,6 +61,8 @@ public class AISensor : MonoBehaviour
     {
         Vector3 startingpoint = Vector3.zero;
         Vector3 farFOVCenter = startingpoint + Vector3.forward * m_sightDistance;
+
+
         Vector3 topRight = CalculateTopRightPoint(farFOVCenter);
         Vector3 topLeft = CalculateTopLeftPoint(farFOVCenter);
         Vector3 bottomRight = CalculateBottomRightPoint(farFOVCenter);
@@ -99,6 +115,15 @@ public class AISensor : MonoBehaviour
     {
         return farFOVCenter + ((Mathf.Sin(m_horizontalSightAngle / 2 * Mathf.Deg2Rad) * m_sightDistance) * Vector3.left) + ((Mathf.Sin(m_verticalSightAngle / 2 * Mathf.Deg2Rad) * m_sightDistance) * Vector3.down);
     }
+    bool CheckInRange<T>(T[,] arrayToCheck, Vector2Int coords)
+    {
+        if(arrayToCheck == null) return false;
+        if(coords.x < arrayToCheck.GetLength(0) && coords.x >= 0 && coords.y < arrayToCheck.GetLength(1) && coords.y >= 0)
+        {
+            return true;
+        }
+        return false;
+    }
 }
 [CustomEditor(typeof(AISensor))]
 public class AISensorInspector : Editor
@@ -135,3 +160,4 @@ public class AISensorInspector : Editor
         }
     }
 }
+

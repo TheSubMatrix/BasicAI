@@ -10,7 +10,7 @@ public class AI : MonoBehaviour
 
     [SerializeField] List<Transform> m_patrolPoints = new List<Transform>();
     [SerializeField] AISensor sensor;
-
+    [SerializeField] GameObject target;
     Vector3[] m_patrolPositions;
     private NavMeshAgent m_agent;
     Vector3? m_desiredPosition;
@@ -20,7 +20,20 @@ public class AI : MonoBehaviour
         patrol,
         follow,
     }
-
+    public void CheckFoundPlayer(GameObject objectFound)
+    {
+        if(objectFound == target) 
+        {
+            myState = aiState.follow;
+        }
+    }
+    public void CheckLostPlayer(GameObject objectFound)
+    {
+        if (objectFound == target)
+        {
+            myState = aiState.patrol;
+        }
+    }
     private void Awake()
     {
         m_agent = GetComponent<NavMeshAgent>();
@@ -44,10 +57,14 @@ public class AI : MonoBehaviour
                 {
                     m_desiredPosition = newPosition;
                     m_agent.destination = (Vector3)m_desiredPosition;
-                    Debug.Log(m_agent.destination);
+                    //Debug.Log(m_agent.destination);
                 }
                 break;
             case aiState.follow:
+                if(m_agent != null)
+                {
+                    m_agent.destination = target.transform.position;
+                }
                 break;
         }
     }

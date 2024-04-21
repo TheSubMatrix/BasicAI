@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 
 namespace StarterAssets
 {
-	[RequireComponent(typeof(CharacterController))]
+	[RequireComponent(typeof(CharacterController)), RequireComponent(typeof(Health))]
 #if ENABLE_INPUT_SYSTEM
 	[RequireComponent(typeof(PlayerInput))]
 #endif
@@ -66,7 +66,7 @@ namespace StarterAssets
 		private float _jumpTimeoutDelta;
 		private float _fallTimeoutDelta;
 
-	
+		private Health _playerHealth;
 #if ENABLE_INPUT_SYSTEM
 		private PlayerInput _playerInput;
 #endif
@@ -95,6 +95,12 @@ namespace StarterAssets
 			{
 				_mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
 			}
+			if(_playerHealth == null)
+			{
+				_playerHealth = GetComponent<Health>();
+			}
+			Cursor.lockState = CursorLockMode.Locked;
+			Cursor.visible = false;
 		}
 
 		private void Start()
@@ -114,15 +120,38 @@ namespace StarterAssets
 
 		private void Update()
 		{
-			JumpAndGravity();
-			GroundedCheck();
-			Move();
-			HandleTryShoot();
+			if(_playerHealth != null)
+			{
+				if (_playerHealth.IsAlive)
+				{
+                    JumpAndGravity();
+                    GroundedCheck();
+                    Move();
+                    HandleTryShoot();
+                }
+			}
+			else
+			{
+                JumpAndGravity();
+                GroundedCheck();
+                Move();
+                HandleTryShoot();
+            }
 		}
 
 		private void LateUpdate()
 		{
-			CameraRotation();
+			if (_playerHealth != null)
+			{
+				if (_playerHealth.IsAlive)
+				{
+					CameraRotation();
+				}
+			}
+			else
+			{
+                CameraRotation();
+            }
 		}
 
 		private void GroundedCheck()

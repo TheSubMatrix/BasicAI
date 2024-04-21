@@ -28,7 +28,7 @@ public class Weapon : MonoBehaviour
             if (damagable != null)
             {
                 damagable.Damage(m_damage);
-                Debug.Log(hitInfo.collider.gameObject.name);
+                //Debug.Log(hitInfo.collider.gameObject.name);
             }
         }
         LaserProjectile newProjectile = Instantiate(projectile, m_firePoint.position, m_firePoint.transform.rotation);
